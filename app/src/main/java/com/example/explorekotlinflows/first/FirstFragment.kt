@@ -9,11 +9,13 @@ import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.fragment.findNavController
 import com.example.explorekotlinflows.LifeCycleLogger
 import com.example.explorekotlinflows.R
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -45,17 +47,20 @@ class FirstFragment : Fragment() {
 
     private fun observeEvents(view: View) {
         Log.d(logTag, "observeEvents")
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+        viewLifecycleOwner.lifecycleScope.launch {
             Log.d(logTag, "observeEvents before collect")
             viewModel.events
                 .collect { event ->
-                    Log.d(logTag, "observeEvents: handle $event")
-                    when (event) {
-                        FirstFragmentViewModel.FirstFragmentEvents.GoToNextScreen -> {
-                            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-                        }
-                        FirstFragmentViewModel.FirstFragmentEvents.MessageFromInit -> {
-                            Snackbar.make(view, "MessageFromInit", Snackbar.LENGTH_SHORT).show()
+                    Log.d(logTag, "observeEvents: got $event")
+                    whenStarted {
+                        Log.d(logTag, "observeEvents: handle $event")
+                        when (event) {
+                            FirstFragmentViewModel.FirstFragmentEvents.GoToNextScreen -> {
+                                findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+                            }
+                            FirstFragmentViewModel.FirstFragmentEvents.MessageFromInit -> {
+                                Snackbar.make(view, "MessageFromInit", Snackbar.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
